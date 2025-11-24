@@ -21,6 +21,15 @@ except Exception:
 # Expose a module-typed name so type-checkers won't complain about missing attributes
 genai: Any = _genai
 
+GEMINI_MODELS = [
+    "gemini-2.5-pro",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-pro",
+    "gemini-1.5-flash",
+]
 
 def get_mime_type(file_path: str) -> str:
     ext = Path(file_path).suffix.lower()

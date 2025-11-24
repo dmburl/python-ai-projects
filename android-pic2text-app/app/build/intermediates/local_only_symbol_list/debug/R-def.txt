@@ -1,0 +1,15 @@
+R_DEF: Internal format may change without notice
+local
+id btn_pick_images
+id btn_pick_output_dir
+id btn_save_key
+id btn_start
+id edit_api_key
+id menu_model_select
+id progressBar
+id spinner_model
+id til_api_key
+id tv_output_dir
+id tv_selected_count
+layout activity_main
+style Theme.Pic2Text

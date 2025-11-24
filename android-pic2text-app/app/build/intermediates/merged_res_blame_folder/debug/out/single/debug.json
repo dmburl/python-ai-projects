@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.dmburl.pic2text.app-merged_res-35:/layout_activity_main.xml.flat",
+        "source": "com.dmburl.pic2text.app-main-37:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/Users/dburrell/.gradle/daemon/8.5/com.dmburl.pic2text.app-merged_res-35:/layout_activity_main.xml.flat",
+        "source": "/Users/dburrell/.gradle/daemon/8.5/com.dmburl.pic2text.app-main-37:/layout/activity_main.xml"
+    }
+]
