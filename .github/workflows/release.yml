@@ -14,9 +14,6 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
-    env:
-      # Prefer the pushed tag name; fall back to the workflow input or the run id
-      RELEASE_TAG: ${{ github.ref_name || github.event.inputs.tag || github.run_id }}
 
     steps:
       - name: Checkout repository
@@ -25,11 +22,27 @@ jobs:
       - name: Ensure zip is available
         run: sudo apt-get update && sudo apt-get install -y zip || true
 
+      - name: Determine release tag
+        id: determine_tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const ref = context.ref || '';
+            let tag = '';
+            if (ref.startsWith('refs/tags/')) {
+              tag = ref.replace('refs/tags/', '');
+            } else if (context.payload && context.payload.inputs && context.payload.inputs.tag) {
+              tag = context.payload.inputs.tag;
+            } else {
+              tag = process.env.GITHUB_RUN_ID || 'manual-' + new Date().toISOString();
+            }
+            core.setOutput('release_tag', tag);
+
       - name: Package ocr2md.py
         id: package
         run: |
           mkdir -p release
-          ZIP_NAME="ocr2md-${RELEASE_TAG}.zip"
+          ZIP_NAME="ocr2md-${{ steps.determine_tag.outputs.release_tag }}.zip"
           echo "Packaging file into release/${ZIP_NAME}"
           zip -j "release/${ZIP_NAME}" "Picture2text/ocr2md.py"
           echo "zip_name=${ZIP_NAME}" >> $GITHUB_OUTPUT
@@ -38,8 +51,8 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          release_name: Release ${{ env.RELEASE_TAG }}
+          tag_name: ${{ steps.determine_tag.outputs.release_tag }}
+          release_name: Release ${{ steps.determine_tag.outputs.release_tag }}
           body: "Automated release of ocr2md.py"
           draft: false
           prerelease: false
