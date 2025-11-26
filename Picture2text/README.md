@@ -175,7 +175,7 @@ The API key is what the app pastes into a secure slot so Google knows which proj
 
 ---
 
--**5) Troubleshooting**
+**5) Troubleshooting**
 - If you see an error about `google-generativeai` not installed: run `pip install -r requirements.txt` and then try again.
 - If the GUI does not open and you see errors about `tkinter`:
   - **On macOS:** make sure you installed Python from python.org (the installer includes tkinter support). If you used Homebrew Python and tkinter is missing, install the Tcl/Tk frameworks or use python.org installer.
