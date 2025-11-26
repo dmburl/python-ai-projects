@@ -112,6 +112,7 @@ Below are step-by-step instructions with extra detail and troubleshooting tips. 
 - If the key is ever exposed, delete/regenerate it immediately in **APIs & Services → Credentials**.
 
 7) Paste or store your API key safely
+- Store your API key safely in a password manager. This will give you future access to it.
 - Beginner: launch the GUI and paste the API key into the `Google Gemini API Key` field.
 - Advanced: set an environment variable named `GOOGLE_API_KEY` so the app picks it up automatically.
 
