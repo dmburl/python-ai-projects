@@ -1,1 +1,3 @@
-google-generativeai
+# OCR to Markdown - Python Dependencies
+# Pin versions to avoid security issues with future releases
+google-generativeai>=0.3.0,<1.0.0
