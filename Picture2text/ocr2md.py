@@ -21,6 +21,7 @@ from typing import Any
 from datetime import datetime
 import re
 import logging
+import webbrowser
 
 # Import google.generativeai in a way that avoids static attribute errors in editors
 try:
@@ -213,7 +214,9 @@ class OCRApp:
         self.root.minsize(700, 850)
         
         self.selected_files = []
-        self.output_folder = "./files"
+        # Default to Downloads directory (cross-platform)
+        downloads_dir = str(Path.home() / "Downloads")
+        self.output_folder = downloads_dir
         self.processing = False
         self.cancel_requested = False
         
@@ -228,6 +231,14 @@ class OCRApp:
     def create_widgets(self):
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.grid(row=0, column=0, sticky="nsew")
+        # Top-level Help menu for discoverability
+        menubar = tk.Menu(self.root)
+        help_menu = tk.Menu(menubar, tearoff=0)
+        help_menu.add_command(label="Setup...", command=self.show_help)
+        help_menu.add_separator()
+        help_menu.add_command(label="About...", command=self.show_about)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        self.root.config(menu=menubar)
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         main_frame.columnconfigure(0, weight=1)
@@ -244,12 +255,11 @@ class OCRApp:
         api_entry = ttk.Entry(api_frame, textvariable=self.api_key_var, show="*", width=60)
         api_entry.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         
-        env_label = ttk.Label(api_frame, text="(Or set GOOGLE_API_KEY environment variable)", font=("Helvetica", 9))
-        env_label.grid(row=1, column=0, sticky="w", pady=(5, 0))
+        # (Environment setup instructions are available under Help → Setup)
         
         # Inline security notice (placed under the API key field so it's visible without a popup)
         notice_text = (
-            "⚠️  SECURITY NOTICE — Your API key is stored in memory while the app runs. "
+            "⚠️  SECURITY NOTICE — Your API key is stored in memory while the app runs."
             "Do NOT share your API key. Clear it after use or close the app when finished."
         )
         api_notice = ttk.Label(
@@ -257,36 +267,44 @@ class OCRApp:
             text=notice_text,
             font=("Helvetica", 9),
             foreground="#8a2b2b",
-            wraplength=700,
+            wraplength=760,
             justify="left"
         )
-        api_notice.grid(row=2, column=0, sticky="w", pady=(6, 0))
+        api_notice.grid(row=1, column=0, sticky="w", pady=(6, 0))
         
-        # Model Selection
-        model_frame = ttk.LabelFrame(main_frame, text="Gemini Model", padding="10")
-        model_frame.grid(row=2, column=0, sticky="ew", pady=(0, 10))
+        # Model Selection & File Size Limit (same row)
+        settings_frame = ttk.Frame(main_frame)
+        settings_frame.grid(row=2, column=0, sticky="ew", pady=(0, 10))
+        settings_frame.columnconfigure(0, weight=1)
+        settings_frame.columnconfigure(1, weight=1)
+        
+        model_frame = ttk.LabelFrame(settings_frame, text="Gemini Model", padding="10")
+        model_frame.grid(row=0, column=0, sticky="ew", padx=(0, 5))
         model_frame.columnconfigure(0, weight=1)
         
-        model_combo = ttk.Combobox(model_frame, textvariable=self.selected_model, values=GEMINI_MODELS, state="readonly", width=40)
-        model_combo.grid(row=0, column=0, sticky="w")
+        model_combo = ttk.Combobox(model_frame, textvariable=self.selected_model, values=GEMINI_MODELS, state="readonly", width=30)
+        model_combo.grid(row=0, column=0, sticky="ew")
         
-        # File Size Limit Section
-        size_frame = ttk.LabelFrame(main_frame, text="File Size Limit", padding="10")
-        size_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
+        size_frame = ttk.LabelFrame(settings_frame, text="File Size Limit", padding="10")
+        size_frame.grid(row=0, column=1, sticky="ew", padx=(5, 0))
+        # Make left column flexible so controls on the right can be pushed to the edge
         size_frame.columnconfigure(0, weight=1)
+        size_frame.columnconfigure(1, weight=0)
+        size_frame.columnconfigure(2, weight=0)
         
-        size_label = ttk.Label(size_frame, text="Maximum file size (MB):")
+        size_label = ttk.Label(size_frame, text="Maximum (MB):")
         size_label.grid(row=0, column=0, sticky="w")
         
-        size_spinbox = ttk.Spinbox(size_frame, from_=1, to=500, textvariable=self.max_file_size_mb, width=10)
-        size_spinbox.grid(row=0, column=1, sticky="w", padx=(10, 0))
-        
-        size_info = ttk.Label(size_frame, text="(Default: 100 MB. Adjust based on API limits or your needs.)", font=("Helvetica", 9))
-        size_info.grid(row=1, column=0, columnspan=2, sticky="w", pady=(5, 0))
+        size_spinbox = ttk.Spinbox(size_frame, from_=1, to=500, textvariable=self.max_file_size_mb, width=12)
+        size_spinbox.grid(row=0, column=1, sticky="e", padx=(10, 0))
+
+        # Small helper text on the same line as the spinbox (right-aligned)
+        size_info = ttk.Label(size_frame, text="(1–500 MB)", font=("Helvetica", 9))
+        size_info.grid(row=0, column=2, sticky="e", padx=(10, 0))
         
         # Input Files Section
         input_frame = ttk.LabelFrame(main_frame, text="Input Files", padding="10")
-        input_frame.grid(row=4, column=0, sticky="ew", pady=(0, 10))
+        input_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
         input_frame.columnconfigure(0, weight=1)
         
         btn_frame = ttk.Frame(input_frame)
@@ -311,7 +329,7 @@ class OCRApp:
         
         # Output Folder Section
         output_frame = ttk.LabelFrame(main_frame, text="Output Directory", padding="10")
-        output_frame.grid(row=5, column=0, sticky="ew", pady=(0, 10))
+        output_frame.grid(row=4, column=0, sticky="ew", pady=(0, 10))
         output_frame.columnconfigure(0, weight=1)
         
         output_entry = ttk.Entry(output_frame, width=60)
@@ -325,7 +343,7 @@ class OCRApp:
         
         # Progress Section
         progress_frame = ttk.LabelFrame(main_frame, text="Progress", padding="10")
-        progress_frame.grid(row=6, column=0, sticky="ew", pady=(0, 10))
+        progress_frame.grid(row=5, column=0, sticky="ew", pady=(0, 10))
         progress_frame.columnconfigure(0, weight=1)
         
         self.progress_label = ttk.Label(progress_frame, text="Ready")
@@ -340,17 +358,17 @@ class OCRApp:
         
         # Log Output
         log_frame = ttk.LabelFrame(main_frame, text="Log", padding="10")
-        log_frame.grid(row=7, column=0, sticky="nsew", pady=(0, 10))
+        log_frame.grid(row=6, column=0, sticky="nsew", pady=(0, 10))
         log_frame.columnconfigure(0, weight=1)
         log_frame.rowconfigure(0, weight=1)
-        main_frame.rowconfigure(7, weight=1)
+        main_frame.rowconfigure(6, weight=1)
         
         self.log_text = scrolledtext.ScrolledText(log_frame, height=8, state="disabled", wrap=tk.WORD)
         self.log_text.grid(row=0, column=0, sticky="nsew")
         
         # Control Buttons
         control_frame = ttk.Frame(main_frame)
-        control_frame.grid(row=8, column=0, sticky="ew", pady=(0, 5))
+        control_frame.grid(row=7, column=0, sticky="ew", pady=(0, 5))
         
         self.start_btn = ttk.Button(control_frame, text="🚀 Start Processing", command=self.start_processing)
         self.start_btn.pack(side="left", padx=(0, 10))
@@ -416,7 +434,15 @@ class OCRApp:
         self.log("Cleared file selection")
     
     def browse_output(self):
-        directory = filedialog.askdirectory(title="Select Output Directory")
+        # Open the directory picker at the currently shown output path (or fallback to default)
+        current_dir = self.output_label.get().strip() or self.output_folder
+        # Ensure initialdir exists; fallback to home if it doesn't
+        try:
+            initial = current_dir if Path(current_dir).exists() else self.output_folder
+        except Exception:
+            initial = self.output_folder
+
+        directory = filedialog.askdirectory(title="Select Output Directory", initialdir=initial)
         if directory:
             self.output_folder = directory
             self.output_label.delete(0, tk.END)
@@ -545,6 +571,145 @@ class OCRApp:
     def clear_api_key(self):
         """Security: Clear API key from memory."""
         self.api_key_var.set("")
+
+    def show_help(self):
+        """Show a help dialog with installation and environment-variable instructions."""
+        install_text = "pip install google-generative-ai"
+        mac_text = 'export GOOGLE_API_KEY="paste-your-api-key-here"'
+        win_text = '$env:GOOGLE_API_KEY = "paste-your-api-key-here"'
+
+        combined = (
+            "Required package:\n"
+            "If you see: Required package 'google-generativeai' is not installed.\n\n"
+            "Install with:\n"
+            f"    {install_text}\n\n"
+            "Set your environment API key using one of the following:\n\n"
+            "macOS / Linux:\n"
+            f"    {mac_text}\n\n"
+            "Windows (PowerShell):\n"
+            f"    {win_text}\n"
+        )
+
+        top = tk.Toplevel(self.root)
+        top.title("Help & Setup")
+        top.geometry("640x320")
+        top.transient(self.root)
+        top.grab_set()
+
+        frame = ttk.Frame(top, padding="10")
+        frame.pack(fill="both", expand=True)
+
+        title = ttk.Label(frame, text="Help & Setup", font=("Helvetica", 12, "bold"))
+        title.pack(anchor="w")
+
+        txt = scrolledtext.ScrolledText(frame, height=12, wrap=tk.WORD, font=("Courier", 10))
+        txt.insert("1.0", combined)
+        # Keep the text widget read-only but allow selection/copy via the buttons
+        txt.configure(state="disabled")
+        txt.pack(fill="both", expand=True, pady=(6, 6))
+
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(fill="x")
+
+        def copy_install():
+            try:
+                self.root.clipboard_clear()
+                self.root.clipboard_append(install_text)
+                self.log("Copied install command to clipboard")
+            except Exception:
+                pass
+
+        def copy_mac():
+            try:
+                self.root.clipboard_clear()
+                self.root.clipboard_append(mac_text)
+                self.log("Copied macOS/Linux env command to clipboard")
+            except Exception:
+                pass
+
+        def copy_win():
+            try:
+                self.root.clipboard_clear()
+                self.root.clipboard_append(win_text)
+                self.log("Copied Windows (PowerShell) env command to clipboard")
+            except Exception:
+                pass
+
+        def copy_all():
+            try:
+                self.root.clipboard_clear()
+                self.root.clipboard_append(combined)
+                self.log("Copied help content to clipboard")
+            except Exception:
+                pass
+
+        copy_install_btn = ttk.Button(btn_frame, text="Copy Install", command=copy_install)
+        copy_install_btn.pack(side="left", padx=(0, 6))
+
+        copy_mac_btn = ttk.Button(btn_frame, text="Copy macOS", command=copy_mac)
+        copy_mac_btn.pack(side="left", padx=(0, 6))
+
+        copy_win_btn = ttk.Button(btn_frame, text="Copy Windows", command=copy_win)
+        copy_win_btn.pack(side="left", padx=(0, 6))
+
+        copy_all_btn = ttk.Button(btn_frame, text="Copy All", command=copy_all)
+        copy_all_btn.pack(side="left", padx=(6, 6))
+
+        close_btn = ttk.Button(btn_frame, text="Close", command=top.destroy)
+        close_btn.pack(side="right")
+
+    def show_about(self):
+        """Show an About dialog with basic app info and a link to the repository."""
+        repo_url = "https://github.com/dmburl/python-ai-projects"
+
+        top = tk.Toplevel(self.root)
+        top.title("About")
+        top.geometry("480x220")
+        top.transient(self.root)
+        top.grab_set()
+
+        frame = ttk.Frame(top, padding="10")
+        frame.pack(fill="both", expand=True)
+
+        title = ttk.Label(frame, text="OCR to Markdown", font=("Helvetica", 14, "bold"))
+        title.pack(anchor="w")
+
+        ver = ttk.Label(frame, text="Version: 0.1 — Developed by dmburl", font=("Helvetica", 9))
+        ver.pack(anchor="w", pady=(4, 4))
+
+        desc = ttk.Label(frame, text="A small GUI to transcribe images/PDFs to Markdown using Google Gemini.", wraplength=440)
+        desc.pack(anchor="w", pady=(0, 8))
+
+        link_label = ttk.Label(frame, text=repo_url, foreground="blue", cursor="hand2")
+        link_label.pack(anchor="w")
+
+        def open_repo(event=None):
+            try:
+                webbrowser.open(repo_url)
+            except Exception:
+                pass
+
+        link_label.bind("<Button-1>", open_repo)
+
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(fill="x", pady=(10, 0))
+
+        def copy_repo():
+            try:
+                self.root.clipboard_clear()
+                self.root.clipboard_append(repo_url)
+                self.log("Copied repository URL to clipboard")
+            except Exception:
+                pass
+
+        copy_btn = ttk.Button(btn_frame, text="Copy Repo URL", command=copy_repo)
+        copy_btn.pack(side="left")
+
+        open_btn = ttk.Button(btn_frame, text="Open in Browser", command=open_repo)
+        open_btn.pack(side="left", padx=(6, 0))
+
+        close_btn = ttk.Button(btn_frame, text="Close", command=top.destroy)
+        close_btn.pack(side="right")
     
     def show_complete(self, success, total, errors):
         msg = f"Successfully processed {success}/{total} files.\n\nOutput folder:\n{self.output_label.get()}"
