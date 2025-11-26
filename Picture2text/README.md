@@ -6,7 +6,6 @@ This guide helps someone who has never used Python to run the `ocr2md.py` app. I
 
 -**Files you should know:**
 - `ocr2md.py` : The GUI app you will run.
-- `requirements.txt` : The Python dependency file (used for installing required packages).
 
 **What is an API key:**
 - Think of an API key like a password the app uses to talk to Google so Google will do the image transcription for you. Keep it secret like a password. Save it in a password manager so you have access to it when you need it. Change it like you would a password.
@@ -54,19 +53,19 @@ Notes:
 **2) Install the app's Python dependency**
 
 Open a Terminal (macOS/Linux) or Command Prompt / PowerShell (Windows). 
-In the folder that contains the script `ocr2md.py` and `requirements.txt`, 
+In the folder that contains the script `ocr2md.py`, 
 run these commands:
 
 macOS / Linux:
 ```bash
 python3 -m pip install --upgrade pip
-pip3 install -r requirements.txt
+pip3 install google-generativeai
 ```
 
 Windows (Command Prompt / PowerShell):
 ```powershell
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install google-generativeai
 ```
 
 If the commands above fail, try `python` instead of `python3`, or run the commands as an Administrator on Windows.
@@ -176,7 +175,7 @@ The API key is what the app pastes into a secure slot so Google knows which proj
 ---
 
 **5) Troubleshooting**
-- If you see an error about `google-generativeai` not installed: run `pip install -r requirements.txt` and then try again.
+- If you see an error about `google-generativeai` not installed: run `pip install google-generativeai` and then try again.
 - If the GUI does not open and you see errors about `tkinter`:
   - **On macOS:** make sure you installed Python from python.org (the installer includes tkinter support). If you used Homebrew Python and tkinter is missing, install the Tcl/Tk frameworks or use python.org installer.
   - **On Linux:** install `python3-tk` (example `sudo apt install python3-tk`).
