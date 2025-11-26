@@ -5,7 +5,7 @@ This guide helps someone who has never used Python to run the `ocr2md.py` app. I
 **What this app does:** Transcribes images (PNG/JPG/PDF) to Markdown using Google's Gemini (Generative AI) service and saves results as text files.
 
 -**Files you should know:**
-- `ocr2md.py` : <a href='ocr2md.py'>The GUI app you will run.</a>
+- `ocr2md.py` : The GUI app you will run. Download the latest version here: <a href="https://github.com/dmburl/python-ai-projects/releases/latest">https://github.com/dmburl/python-ai-projects/releases/latest</a>
 
 **What is an API key:**
 - Think of an API key like a password the app uses to talk to Google so Google will do the image transcription for you. Keep it secret like a password. Save it in a password manager so you have access to it when you need it. Change it like you would a password.
@@ -135,3 +135,5 @@ The API key is what the app pastes into a secure slot so Google knows which proj
 
 **6) Safety and cost notes**
 - Using Google Generative APIs may incur charges — check your Google Cloud Console Billing page to monitor usage and set spending alerts.
+
+---

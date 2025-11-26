@@ -185,3 +185,31 @@ The API key is what the app pastes into a secure slot so Google knows which proj
 
 **6) Safety and cost notes**
 - Using Google Generative APIs may incur charges — check your Google Cloud Console Billing page to monitor usage and set spending alerts.
+
+---
+
+**7) Download latest release**
+
+Want the packaged app instead of running from source? Useful if you want a single ZIP with `ocr2md` for quick distribution.
+
+- Open in your browser and download the release asset:
+
+  https://github.com/dmburl/python-ai-projects/releases/latest
+
+- Using GitHub CLI (recommended for scripting):
+
+  ```bash
+  # Install GitHub CLI: https://cli.github.com/
+  gh release download --repo dmburl/python-ai-projects --pattern 'ocr2md-*.zip' --dir .
+  # This saves the latest released zip into the current directory
+  ```
+
+- Or download the current source file directly (not a release asset):
+
+  ```bash
+  curl -L -o ocr2md.py https://raw.githubusercontent.com/dmburl/python-ai-projects/main/Picture2text/ocr2md.py
+  ```
+
+Notes:
+- Use the Releases page or `gh release download` to get the versioned release ZIP (preferred).
+- The `curl` command fetches the file directly from the `main` branch; it is not the release asset and will reflect the repository's current `main` contents.

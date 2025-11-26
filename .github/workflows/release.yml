@@ -1,0 +1,57 @@
+name: Release OCR2MD
+
+on:
+  push:
+    # Create a release when tags like `v0.1` are pushed
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Optional tag name to use for a manual release'
+        required: false
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    env:
+      # Prefer the pushed tag name; fall back to the workflow input or the run id
+      RELEASE_TAG: ${{ github.ref_name || github.event.inputs.tag || github.run_id }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure zip is available
+        run: sudo apt-get update && sudo apt-get install -y zip || true
+
+      - name: Package ocr2md.py
+        id: package
+        run: |
+          mkdir -p release
+          ZIP_NAME="ocr2md-${RELEASE_TAG}.zip"
+          echo "Packaging file into release/${ZIP_NAME}"
+          zip -j "release/${ZIP_NAME}" "Picture2text/ocr2md.py"
+          echo "zip_name=${ZIP_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          release_name: Release ${{ env.RELEASE_TAG }}
+          body: "Automated release of ocr2md.py"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release asset (zip)
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release/${{ steps.package.outputs.zip_name }}
+          asset_name: ${{ steps.package.outputs.zip_name }}
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
