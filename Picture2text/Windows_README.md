@@ -5,7 +5,7 @@ This guide helps someone who has never used Python to run the `ocr2md.py` app. I
 **What this app does:** Transcribes images (PNG/JPG/PDF) to Markdown using Google's Gemini (Generative AI) service and saves results as text files.
 
 -**Files you should know:**
-- `ocr2md.py` : The GUI app you will run. Download the latest version here: <a href="https://github.com/dmburl/python-ai-projects/blob/main/Picture2text/ocr2md.py">https://github.com/dmburl/python-ai-projects/blob/main/Picture2text/ocr2md.py</a>
+- `ocr2md.py` : The GUI app you will run. Download the latest release ZIP from: https://github.com/dmburl/python-ai-projects/releases/latest
 
 **What is an API key:**
 - Think of an API key like a password the app uses to talk to Google so Google will do the image transcription for you. Keep it secret like a password. Save it in a password manager so you have access to it when you need it. Change it like you would a password.
@@ -137,3 +137,29 @@ The API key is what the app pastes into a secure slot so Google knows which proj
 - Using Google Generative APIs may incur charges — check your Google Cloud Console Billing page to monitor usage and set spending alerts.
 
 ---
+**7) Download latest release**
+
+Want the packaged app instead of running from source? Useful if you want a single ZIP with `ocr2md` for quick distribution.
+
+- Open in your browser and download the release asset:
+
+  https://github.com/dmburl/python-ai-projects/releases/latest
+
+- Using GitHub CLI (recommended for scripting):
+
+  ```bash
+  # Install GitHub CLI: https://cli.github.com/
+  gh release download --repo dmburl/python-ai-projects --pattern 'ocr2md-*.zip' --dir .
+  # This saves the latest released zip into the current directory
+  ```
+
+- Or download the current source file directly (not a release asset):
+
+  ```bash
+  # Using PowerShell:
+  Invoke-WebRequest -Uri https://raw.githubusercontent.com/dmburl/python-ai-projects/main/Picture2text/ocr2md.py -OutFile ocr2md.py
+  ```
+
+Notes:
+- Use the Releases page or `gh release download` to get the versioned release ZIP (preferred).
+- The direct download fetches the file from the `main` branch; it is not the release asset and will reflect the repository's current `main` contents.
