@@ -1,6 +1,6 @@
 # android-pic2text-app
 
-This folder contains a starter Android Studio Kotlin project scaffold to port `Picture2text/ocr2md.py` into an Android app.
+This folder contains a starter Android Studio Kotlin project scaffold to port `Picture2text/pagesnapai.py` into an Android app.
 
 Goal
 - Let the end user provide their own Google Gemini API key and store it securely on-device using EncryptedSharedPreferences.

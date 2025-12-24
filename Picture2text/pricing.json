@@ -1,72 +1,76 @@
 {
-  "_comment": "Gemini API pricing (USD per 1M tokens) — Last updated: Nov 25, 2025",
+  "_comment": "Gemini API pricing (USD per 1M tokens) — Last updated: Nov 30, 2025",
   "_source": "https://ai.google.dev/pricing",
-  "_note": "Update this file when Google announces pricing changes. Check the URL above for the latest rates.",
+  "_note": "Update this file when Google announces pricing changes. Check the URL above for the latest rates. All prices are from the Paid tier (Standard pricing, not Batch).",
   "models": {
     "gemini-3-pro-preview": {
-      "input": 0.075,
-      "output": 0.30,
-      "status": "preview"
+      "input": 2.00,
+      "output": 12.00,
+      "status": "preview",
+      "note": "Pricing for prompts <= 200k tokens. Higher rates for > 200k tokens"
     },
     "gemini-3-pro-image-preview": {
-      "input": 0.075,
-      "output": 0.30,
-      "image_input_per_image": 0.0011,
-      "status": "preview"
+      "input": 2.00,
+      "output": 12.00,
+      "status": "preview",
+      "note": "Text pricing. Image output priced at $120 per 1M tokens"
     },
     "gemini-2.5-pro": {
-      "input": 0.075,
-      "output": 0.30,
-      "status": "stable"
+      "input": 1.25,
+      "output": 10.00,
+      "status": "stable",
+      "note": "Pricing for prompts <= 200k tokens. $2.50 input/$15.00 output for > 200k"
     },
     "gemini-2.5-flash": {
-      "input": 0.075,
-      "output": 0.30,
+      "input": 0.30,
+      "output": 2.50,
       "status": "stable"
     },
     "gemini-2.5-flash-preview-09-2025": {
-      "input": 0.075,
-      "output": 0.30,
+      "input": 0.30,
+      "output": 2.50,
       "status": "preview"
     },
     "gemini-2.5-flash-lite": {
-      "input": 0.0375,
-      "output": 0.15,
+      "input": 0.10,
+      "output": 0.40,
       "status": "stable"
     },
     "gemini-2.5-flash-lite-preview-09-2025": {
-      "input": 0.0375,
-      "output": 0.15,
+      "input": 0.10,
+      "output": 0.40,
       "status": "preview"
     },
     "gemini-2.5-flash-image": {
-      "input": 0.075,
-      "output": 0.30,
-      "image_output_per_1k_tokens": 30,
-      "status": "preview"
+      "input": 0.30,
+      "output": 0.039,
+      "status": "preview",
+      "note": "Image output: $30 per 1M tokens ($0.039 per standard image)"
     },
     "gemini-2.0-flash": {
-      "input": 0.075,
-      "output": 0.30,
+      "input": 0.10,
+      "output": 0.40,
       "status": "stable"
     },
     "gemini-2.0-flash-lite": {
-      "input": 0.0375,
-      "output": 0.15,
+      "input": 0.075,
+      "output": 0.30,
       "status": "stable"
     },
     "gemini-1.5-pro": {
-      "input": 0.075,
-      "output": 0.30,
-      "status": "stable"
+      "input": 1.25,
+      "output": 10.00,
+      "status": "stable",
+      "note": "Estimated. Check page for current rates"
     },
     "gemini-1.5-flash": {
-      "input": 0.075,
-      "output": 0.30,
-      "status": "stable"
+      "input": 0.30,
+      "output": 2.50,
+      "status": "stable",
+      "note": "Estimated. Check page for current rates"
     },
     "gemini-embedding-001": {
-      "input": 0.02,
+      "input": 0.15,
       "status": "stable"
     }
   }

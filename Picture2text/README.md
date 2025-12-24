@@ -1,11 +1,11 @@
-# OCR to Markdown — Quick Start
+# PageSnapAI — Quick Start
 
-This guide helps someone who has never used Python to run the `ocr2md.py` app. It covers installing Python, installing the script's dependency, how to get a Google API key, and how to run the app.
+This guide helps someone who has never used Python to run the PageSnapAI app. It covers installing Python, installing the script's dependency, how to get a Google API key, and how to run the app.
 
 **What this app does:** Transcribes images (PNG/JPG/PDF) to Markdown using Google's Gemini (Generative AI) service and saves results as text files.
 
 -**Files you should know:**
-- `ocr2md.py` : The GUI app you will run. Download the latest release ZIP from: https://github.com/dmburl/python-ai-projects/releases/latest
+- `pagesnapai.py` : The GUI app you will run. Download the latest release ZIP from: https://github.com/dmburl/python-ai-projects/releases/latest
 
 **What is an API key:**
 - Think of an API key like a password the app uses to talk to Google so Google will do the image transcription for you. Keep it secret like a password. Save it in a password manager so you have access to it when you need it. Change it like you would a password.
@@ -53,7 +53,7 @@ Notes:
 **2) Install the app's Python dependency**
 
 Open a Terminal (macOS/Linux) or Command Prompt / PowerShell (Windows). 
-In the folder that contains the script `ocr2md.py`, 
+In the folder that contains the script `pagesnapai.py`, 
 run these commands:
 
 macOS / Linux:
@@ -82,7 +82,7 @@ Below are step-by-step instructions with extra detail and troubleshooting tips. 
 
 2) Create a new Google Cloud Project
 - In the Cloud Console, find the **Select a project** dropdown near the top of the page and choose **New Project**.
-- Give the project a simple name, e.g. `ocr2md-project`, and click **Create**. The console may take a few seconds to initialize the project and switch to the new project context.
+- Give the project a simple name, e.g. `pagesnapai-project`, and click **Create**. The console may take a few seconds to initialize the project and switch to the new project context.
 
 3) Enable billing for the project (required)
 - Google requires billing enabled to use Generative AI services. In the Cloud Console, open the **Billing** section from the left-hand menu and attach or create a billing account.
@@ -118,7 +118,7 @@ Below are step-by-step instructions with extra detail and troubleshooting tips. 
   macOS / Linux (temporary for current terminal session):
   ```bash
   export GOOGLE_API_KEY="paste-your-api-key-here"
-  python3 ocr2md.py
+  python3 pagesnapai.py
   ```
 
   macOS / Linux (persist for your user): add to `~/.bash_profile` or `~/.zshrc`:
@@ -130,7 +130,7 @@ Below are step-by-step instructions with extra detail and troubleshooting tips. 
   Windows PowerShell (temporary for current session):
   ```powershell
   $env:GOOGLE_API_KEY = "paste-your-api-key-here"
-  python ocr2md.py
+  python pagesnapai.py
   ```
 
   Windows (persist across sessions)(**Not Recommneded**):
@@ -154,8 +154,8 @@ The API key is what the app pastes into a secure slot so Google knows which proj
 
 **Option A** — Paste the key into the app (recommended):
 1. Start the app:
-  - macOS / Linux: `python3 ocr2md.py`
-  - Windows: `python ocr2md.py`
+  - macOS / Linux: `python3 pagesnapai.py`
+  - Windows: `python pagesnapai.py`
 2. When the GUI opens, paste the API key into the "Google Gemini API Key" box. You do not need to set environment variables.
 3. Click "Select Files" to pick images or PDFs. Click "Select Folder" to pick where to save results.
 4. Click "Start Processing".
@@ -164,12 +164,12 @@ The API key is what the app pastes into a secure slot so Google knows which proj
 - macOS / Linux:
   ```bash
   export GOOGLE_API_KEY="paste-your-api-key-here"
-  python3 ocr2md.py
+  python3 pagesnapai.py
   ```
 - Windows (PowerShell temporary for that session):
   ```powershell
   $env:GOOGLE_API_KEY = "paste-your-api-key-here"
-  python ocr2md.py
+  python pagesnapai.py
   ```
 
 ---
@@ -190,7 +190,7 @@ The API key is what the app pastes into a secure slot so Google knows which proj
 
 **7) Download latest release**
 
-Want the packaged app instead of running from source? Useful if you want a single ZIP with `ocr2md` for quick distribution.
+Want the packaged app instead of running from source? Useful if you want a single ZIP with `pagesnapai` for quick distribution.
 
 - Open in your browser and download the release asset:
 
@@ -200,14 +200,14 @@ Want the packaged app instead of running from source? Useful if you want a singl
 
   ```bash
   # Install GitHub CLI: https://cli.github.com/
-  gh release download --repo dmburl/python-ai-projects --pattern 'ocr2md-*.zip' --dir .
+  gh release download --repo dmburl/python-ai-projects --pattern 'pagesnapai-*.zip' --dir .
   # This saves the latest released zip into the current directory
   ```
 
 - Or download the current source file directly (not a release asset):
 
   ```bash
-  curl -L -o ocr2md.py https://raw.githubusercontent.com/dmburl/python-ai-projects/main/Picture2text/ocr2md.py
+  curl -L -o pagesnapai.py https://raw.githubusercontent.com/dmburl/python-ai-projects/main/Picture2text/pagesnapai.py
   ```
 
 Notes:

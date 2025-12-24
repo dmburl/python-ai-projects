@@ -24,7 +24,7 @@ A workspace for lightweight, cross-platform Python tools that combine local GUI/
 
 Quick links
 - BookMarketingGenerator: `BookMarketingGenerator/book-marketing-generator.py`
-- Picture2text: `Picture2text/ocr2md.py`
+- Picture2text: `Picture2text/pagesnapai.py`
 
 ---
 

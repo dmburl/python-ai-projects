@@ -23,12 +23,12 @@ jobs:
 
       - name: Create zip archive
         run: |
-          zip -r ocr2md-${{ steps.version.outputs.tag }}.zip Picture2text/
+          zip -r pagesnapai-${{ steps.version.outputs.tag }}.zip Picture2text/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ocr2md-${{ steps.version.outputs.tag }}.zip
+          files: pagesnapai-${{ steps.version.outputs.tag }}.zip
           draft: false
           prerelease: false
         env:
