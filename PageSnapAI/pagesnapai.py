@@ -300,9 +300,9 @@ def transcribe_image(file_path: str, api_key: str, model: str = "gemini-2.5-flas
     if hasattr(genai, "configure"):
         try:
             genai.configure(api_key=api_key)
-        except Exception:
-            # ignore configure failures (some versions use env vars)
-            pass
+        except Exception as e:
+            # Some versions use env vars; non-fatal if configure fails
+            logger.debug(f"genai.configure() not available: {e}")
     
     file_ext = Path(file_path).suffix.lower()
     model_instance = genai.GenerativeModel(model)
@@ -796,8 +796,8 @@ class OCRApp:
             if hasattr(genai, "configure"):
                 try:
                     genai.configure(api_key=self.get_api_key())
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"genai.configure() not available: {e}")
             
             total_files = len(self.selected_files)
             output_dir = self.output_label.get().strip()
@@ -901,32 +901,32 @@ class OCRApp:
                 self.root.clipboard_clear()
                 self.root.clipboard_append(install_text)
                 self.log("Copied install command to clipboard")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to copy to clipboard: {e}")
 
         def copy_mac():
             try:
                 self.root.clipboard_clear()
                 self.root.clipboard_append(mac_text)
                 self.log("Copied macOS/Linux env command to clipboard")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to copy to clipboard: {e}")
 
         def copy_win():
             try:
                 self.root.clipboard_clear()
                 self.root.clipboard_append(win_text)
                 self.log("Copied Windows (PowerShell) env command to clipboard")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to copy to clipboard: {e}")
 
         def copy_all():
             try:
                 self.root.clipboard_clear()
                 self.root.clipboard_append(combined)
                 self.log("Copied help content to clipboard")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to copy to clipboard: {e}")
 
         copy_install_btn = ttk.Button(btn_frame, text="Copy Install", command=copy_install)
         copy_install_btn.pack(side="left", padx=(0, 6))
@@ -971,8 +971,8 @@ class OCRApp:
         def open_repo(event=None):
             try:
                 webbrowser.open(repo_url)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to open browser: {e}")
 
         link_label.bind("<Button-1>", open_repo)
 
@@ -984,8 +984,8 @@ class OCRApp:
                 self.root.clipboard_clear()
                 self.root.clipboard_append(repo_url)
                 self.log("Copied repository URL to clipboard")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to copy to clipboard: {e}")
 
         copy_btn = ttk.Button(btn_frame, text="Copy Repo URL", command=copy_repo)
         copy_btn.pack(side="left")
