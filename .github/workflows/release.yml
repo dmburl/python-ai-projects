@@ -23,7 +23,7 @@ jobs:
 
       - name: Create zip archive
         run: |
-          zip -r pagesnapai-${{ steps.version.outputs.tag }}.zip Picture2text/
+          zip -r pagesnapai-${{ steps.version.outputs.tag }}.zip PageSnapAI/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
