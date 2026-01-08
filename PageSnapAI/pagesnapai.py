@@ -26,6 +26,36 @@ import webbrowser
 import json
 import mimetypes
 
+
+# Simple tooltip class for hover help text
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tipwindow = None
+        self.id = None
+        self.x = self.y = 0
+        self.widget.bind("<Enter>", self.showtip, add=True)
+        self.widget.bind("<Leave>", self.hidetip, add=True)
+    
+    def showtip(self, event=None):
+        if self.tipwindow or not self.text:
+            return
+        x = self.widget.winfo_rootx() + 10
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 10
+        self.tipwindow = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(tw, text=self.text, background="#ffffe0", relief=tk.SOLID, borderwidth=1, font=("Helvetica", 9), justify=tk.LEFT)
+        label.pack(ipadx=5, ipady=3)
+    
+    def hidetip(self, event=None):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
+
 # Import google.generativeai in a way that avoids static attribute errors in editors
 try:
     import google.generativeai as _genai  # type: ignore
@@ -129,6 +159,20 @@ def sanitize_filename(filename: str) -> str:
     safe_name = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
     # Limit length to prevent filesystem issues
     return safe_name[:255]
+
+
+def get_unique_filename(base_path: Path) -> Path:
+    """Return a unique filename by appending (number) if file exists."""
+    if not base_path.exists():
+        return base_path
+    stem = base_path.stem
+    suffix = base_path.suffix
+    counter = 1
+    while True:
+        new_path = base_path.parent / f"{stem}({counter}){suffix}"
+        if not new_path.exists():
+            return new_path
+        counter += 1
 
 
 def sanitize_prompt(prompt: str, max_len: int = 512) -> str:
@@ -281,7 +325,7 @@ def extract_text_from_file(file_path: str, max_size_mb: int = 100) -> str:
         raise ValueError(f"Unsupported document type: {ext}")
 
 
-def transcribe_image(file_path: str, api_key: str, model: str = "gemini-2.5-flash", max_size_mb: int = 100, prompt: str | None = None, extract_text: bool = True) -> tuple[str, float]:
+def transcribe_image(file_path: str, api_key: str, model: str = "gemini-2.5-flash", max_size_mb: int = 100, prompt: str | None = None, extract_text: bool = True, temperature: float = 1.0) -> tuple[str, float]:
     """Process file (image or document) to markdown using Google Gemini.
     
     Supports:
@@ -325,10 +369,13 @@ def transcribe_image(file_path: str, api_key: str, model: str = "gemini-2.5-flas
         
         for attempt in range(1, max_retries + 1):
             try:
-                response = model_instance.generate_content([
-                    prompt_text,
-                    {"mime_type": mime_type, "data": file_data}
-                ])
+                response = model_instance.generate_content(
+                    [
+                        prompt_text,
+                        {"mime_type": mime_type, "data": file_data}
+                    ],
+                    generation_config={"temperature": temperature}
+                )
                 # Extract token usage and calculate cost
                 input_tokens = 0
                 output_tokens = 0
@@ -376,10 +423,13 @@ def transcribe_image(file_path: str, api_key: str, model: str = "gemini-2.5-flas
         
         for attempt in range(1, max_retries + 1):
             try:
-                response = model_instance.generate_content([
-                    prompt_text,
-                    content_part
-                ])
+                response = model_instance.generate_content(
+                    [
+                        prompt_text,
+                        content_part
+                    ],
+                    generation_config={"temperature": temperature}
+                )
                 # Extract token usage and calculate cost
                 input_tokens = 0
                 output_tokens = 0
@@ -412,7 +462,7 @@ def transcribe_image(file_path: str, api_key: str, model: str = "gemini-2.5-flas
     raise last_error or RuntimeError("Max retries exceeded")
 
 
-def process_file(input_path: str, output_dir: str, api_key: str, model: str = "gemini-2.5-flash", max_size_mb: int = 100, prompt: str | None = None, extract_text: bool = True) -> tuple[str, float]:
+def process_file(input_path: str, output_dir: str, api_key: str, model: str = "gemini-2.5-flash", max_size_mb: int = 100, prompt: str | None = None, extract_text: bool = True, temperature: float = 1.0) -> tuple[str, float]:
     """Process a single file and return output path and cost.
     
     Returns:
@@ -432,14 +482,19 @@ def process_file(input_path: str, output_dir: str, api_key: str, model: str = "g
     
     # Security: Sanitize output filename
     safe_filename = sanitize_filename(input_file.name)
-    output_file = output_path / f"{safe_filename}.txt"
+    if input_file.suffix.lower() == '.txt':
+        base_name = safe_filename
+    else:
+        base_name = f"{safe_filename}.txt"
+    base_output_file = output_path / base_name
+    output_file = get_unique_filename(base_output_file)
     
     # Verify output file is still within output directory (prevent path traversal)
     if not validate_file_path(str(output_file), output_path):
         raise ValueError(f"Output file path validation failed")
     
     # 'prompt' may be provided by the GUI (caller should sanitize). Default preserved when prompt is None
-    markdown_text, cost = transcribe_image(str(input_file), api_key, model, max_size_mb, prompt, extract_text)
+    markdown_text, cost = transcribe_image(str(input_file), api_key, model, max_size_mb, prompt, extract_text, temperature)
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(markdown_text)
     return str(output_file), cost
@@ -467,6 +522,8 @@ class OCRApp:
         self.custom_prompt_var = tk.StringVar(value="Transcribe this image to Markdown")
         # Document handling mode: True = extract text, False = send as binary to LLM
         self.extract_document_text = tk.BooleanVar(value=True)
+        # Temperature for AI response (0.0 = deterministic, 1.0+ = more creative)
+        self.temperature_var = tk.DoubleVar(value=1.0)
         
         # Security notice is shown inline under the API Key field (avoid popup on startup)
 
@@ -492,19 +549,20 @@ class OCRApp:
         title.grid(row=0, column=0, pady=(0, 15), sticky="w")
         
         # API Key Section
-        # API Key, Model, and File Size Limit (all on same row)
+        # Single row: API Key, Model, File Size Limit, Temperature
         top_settings_frame = ttk.Frame(main_frame)
         top_settings_frame.grid(row=1, column=0, sticky="ew", pady=(0, 10))
         top_settings_frame.columnconfigure(0, weight=2)
         top_settings_frame.columnconfigure(1, weight=1)
         top_settings_frame.columnconfigure(2, weight=1)
+        top_settings_frame.columnconfigure(3, weight=1)
         
         # Google API Key
         api_frame = ttk.LabelFrame(top_settings_frame, text="Google API Key", padding="10")
         api_frame.grid(row=0, column=0, sticky="ew", padx=(0, 5))
         api_frame.columnconfigure(0, weight=1)
         
-        api_entry = tk.Entry(api_frame, textvariable=self.api_key_var, show="*", width=40, relief=tk.SUNKEN, borderwidth=2)
+        api_entry = tk.Entry(api_frame, textvariable=self.api_key_var, show="*", width=20, relief=tk.SUNKEN, borderwidth=2)
         api_entry.grid(row=0, column=0, sticky="ew")
         
         # Gemini Model
@@ -512,16 +570,36 @@ class OCRApp:
         model_frame.grid(row=0, column=1, sticky="ew", padx=5)
         model_frame.columnconfigure(0, weight=1)
         
-        model_combo = ttk.Combobox(model_frame, textvariable=self.selected_model, values=GEMINI_MODELS, state="readonly", width=20)
+        model_combo = ttk.Combobox(model_frame, textvariable=self.selected_model, values=GEMINI_MODELS, state="readonly", width=11)
         model_combo.grid(row=0, column=0, sticky="ew")
         
         # File Size Limit
-        size_frame = ttk.LabelFrame(top_settings_frame, text="File Size Limit (MB)", padding="10")
-        size_frame.grid(row=0, column=2, sticky="ew", padx=(5, 0))
+        size_frame = ttk.LabelFrame(top_settings_frame, text="Max File (MB)", padding="10")
+        size_frame.grid(row=0, column=2, sticky="ew", padx=5)
         size_frame.columnconfigure(0, weight=1)
         
-        size_spinbox = ttk.Spinbox(size_frame, from_=1, to=500, textvariable=self.max_file_size_mb, width=12)
+        size_spinbox = ttk.Spinbox(size_frame, from_=1, to=500, textvariable=self.max_file_size_mb, width=3)
         size_spinbox.grid(row=0, column=0, sticky="ew")
+        
+        # Temperature control
+        temp_frame = ttk.LabelFrame(top_settings_frame, text="Temperature", padding="10")
+        temp_frame.grid(row=0, column=3, sticky="ew", padx=(5, 0))
+        temp_frame.columnconfigure(0, weight=1)
+        
+        temp_scale = ttk.Scale(temp_frame, from_=0.0, to=2.0, variable=self.temperature_var, orient=tk.HORIZONTAL)
+        temp_scale.grid(row=0, column=0, sticky="ew")
+        
+        temp_label = ttk.Label(temp_frame, text="1.0", font=("Helvetica", 9), width=4)
+        temp_label.grid(row=0, column=1, sticky="w", padx=(10, 0))
+        
+        # Add tooltip to temperature slider
+        tooltip_text = "0.0 = Deterministic\n1.0 = Defualt\n2.0 = Creative/Chaotic"
+        ToolTip(temp_scale, tooltip_text)
+        
+        def _update_temp_label(value):
+            temp_label.config(text=f"{float(value):.1f}")
+        
+        temp_scale.configure(command=_update_temp_label)
         
         # Security notice (below the three fields)
         notice_text = (
@@ -542,6 +620,7 @@ class OCRApp:
         prompt_frame = ttk.LabelFrame(main_frame, text="Prompt Template", padding="10")
         prompt_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
         prompt_frame.columnconfigure(0, weight=1)
+        prompt_frame.columnconfigure(1, weight=0)
 
         # Multi-line text widget for prompt (3 lines tall, with word wrapping)
         prompt_entry = tk.Text(prompt_frame, height=3, wrap=tk.WORD, relief=tk.SUNKEN, borderwidth=2)
@@ -804,6 +883,7 @@ class OCRApp:
             api_key = self.get_api_key()
             model = self.selected_model.get()
             max_size_mb = self.max_file_size_mb.get()
+            temperature = self.temperature_var.get()
             # Sanitize prompt once and reuse for all files in this run
             prompt_text = sanitize_prompt(self.custom_prompt_var.get()) or None
             if prompt_text is None:
@@ -824,7 +904,7 @@ class OCRApp:
                 self.log(f"Processing ({i}/{total_files}): {filename}")
                 
                 try:
-                    output, cost = process_file(file_path, output_dir, api_key, model, max_size_mb, prompt_text, self.extract_document_text.get())
+                    output, cost = process_file(file_path, output_dir, api_key, model, max_size_mb, prompt_text, self.extract_document_text.get(), temperature)
                     results.append(output)
                     total_cost += cost
                     self.log(f"  ✓ Completed: {filename} — Cost: ${cost:.6f}")
